@@ -22,15 +22,7 @@ public class OperationRepositoryTest {
 
     private Operation operation;
 
-    @BeforeEach
-    public void setUp() {
-        operation = new Operation();
-        operation.setType(Type.ADDITION);
-        operation.setCost(10.0);
-        operationRepository.save(operation);
-    }
-
-    @Test
+        @Test
     public void testFindByType() {
         Optional<Operation> foundOperation = operationRepository.findByType(Type.fromString("addition"));
 
@@ -41,7 +33,7 @@ public class OperationRepositoryTest {
 
     @Test
     public void testFindByTypeNotFound() {
-        Optional<Operation> foundOperation = operationRepository.findByType(Type.SUBTRACTION);
+        Optional<Operation> foundOperation = operationRepository.findByType(Type.fromString("default"));
 
         assertFalse(foundOperation.isPresent());
     }

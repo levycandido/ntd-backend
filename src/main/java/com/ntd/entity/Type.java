@@ -9,7 +9,8 @@ public enum Type {
     MULTIPLICATION("multiplication"),
     DIVISION("division"),
     SQUARE_ROOT("square_root"),
-    RANDOM_STRING("random_string");
+    RANDOM_STRING("random_string"),
+    DEFAULT("default");
 
     private final String type;
 

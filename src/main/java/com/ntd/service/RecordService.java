@@ -66,7 +66,9 @@ public class RecordService {
 
         Record recordSaved = recordRepository
                 .save(record);
-        recordSaved.getUser().setPassword(null);
+        if (recordSaved.getUser() != null) {
+           recordSaved.getUser().setPassword(null);
+        }
 
         return ObjectMapperUtils.map(recordSaved, RecordDTO.class);
     }
