@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/operations")
+@RequestMapping("/v1/operations")
 public class OperationController {
     @Autowired
     private OperationService operationService;

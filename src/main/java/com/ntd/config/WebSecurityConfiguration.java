@@ -37,7 +37,9 @@ public class WebSecurityConfiguration {
                     auth.requestMatchers("/signup",
                             "/login",
                             "/h2-console/**").permitAll();
-                    auth.requestMatchers("/v1/users/**", "/v1/records/**").permitAll();
+                    auth.requestMatchers("/v1/users/**",
+                            "/v1/records/**",
+                            "/v1/operations/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
