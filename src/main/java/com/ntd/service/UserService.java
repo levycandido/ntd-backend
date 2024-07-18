@@ -61,10 +61,9 @@ public class UserService {
         return ObjectMapperUtils.mapAll(users, UserDTO.class);
     }
 
-    public UserDTO findByEmail(String userId) {
-        User user = userRepository.findByEmail(userId)
+   public User findByEmail(String userId) {
+        return userRepository.findByEmail(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return ObjectMapperUtils.map(user, UserDTO.class);
     }
 
     public User save(User user) {

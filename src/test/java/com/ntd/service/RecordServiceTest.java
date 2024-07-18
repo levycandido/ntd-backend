@@ -66,7 +66,7 @@ public class RecordServiceTest {
         operation = new Operation(1L, Type.ADDITION, 50.0);
 
         when(userService.findByEmail("testUser"))
-                .thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+                .thenReturn(user);
         when(operationService.findByType("addition")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -82,7 +82,7 @@ public class RecordServiceTest {
         recordDTO.setOperation("subtraction");
         operation = new Operation(1L, Type.SUBTRACTION, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("subtraction")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -98,7 +98,7 @@ public class RecordServiceTest {
         recordDTO.setOperation("multiplication");
         operation = new Operation(1L, Type.MULTIPLICATION, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("multiplication")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -114,7 +114,7 @@ public class RecordServiceTest {
         recordDTO.setOperation("division");
         operation = new Operation(1L, Type.DIVISION, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("division")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -130,7 +130,7 @@ public class RecordServiceTest {
         recordDTO.setOperation("square_root");
         operation = new Operation(1L, Type.SQUARE_ROOT, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("square_root")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -146,7 +146,7 @@ public class RecordServiceTest {
         recordDTO.setOperation("random_string");
         operation = new Operation(1L, Type.RANDOM_STRING, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("random_string")).thenReturn(operation);
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
@@ -164,7 +164,7 @@ public class RecordServiceTest {
         user.setBalance(30.0);
         operation = new Operation(1L, Type.ADDITION, 50.0);
 
-        when(userService.findByEmail("testUser")).thenReturn(ObjectMapperUtils.map(user, UserDTO.class));
+        when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("addition")).thenReturn(operation);
 
         assertThrows(InsufficientBalanceException.class, () -> recordService.createRecord(recordDTO));

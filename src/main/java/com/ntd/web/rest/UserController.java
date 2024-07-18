@@ -1,5 +1,7 @@
 package com.ntd.web.rest;
 
+import com.ntd.ObjectMapperUtils;
+import com.ntd.entity.User;
 import com.ntd.service.UserService;
 import com.ntd.service.dao.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,9 @@ public class UserController {
     @PostMapping()
     public ResponseEntity<?> getUserDetails(@RequestBody UserDTO userDTO) {
 
-        UserDTO userReturned = userService.findByEmail(userDTO.getEmail());
+        User userReturned = userService.findByEmail(userDTO.getEmail());
 
-        return ResponseEntity.ok(userReturned);
+        return ResponseEntity.ok(ObjectMapperUtils.map(userReturned, UserDTO.class));
 
     }
 }

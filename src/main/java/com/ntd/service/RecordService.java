@@ -7,7 +7,6 @@ import com.ntd.entity.Type;
 import com.ntd.entity.User;
 import com.ntd.repository.RecordRepository;
 import com.ntd.service.dao.RecordDTO;
-import com.ntd.service.dao.UserDTO;
 import com.ntd.service.exception.InsufficientBalanceException;
 import com.ntd.service.strategy.OperationStrategy;
 import com.ntd.service.strategy.OperationStrategyFactory;
@@ -28,7 +27,9 @@ public class RecordService {
     private final OperationService operationService;
 
     @Autowired
-    public RecordService(RecordRepository recordRepository, UserService userService, OperationService operationService) {
+    public RecordService(RecordRepository recordRepository,
+                         UserService userService,
+                         OperationService operationService) {
         this.recordRepository = recordRepository;
         this.userService = userService;
         this.operationService = operationService;
@@ -37,22 +38,26 @@ public class RecordService {
     @Transactional
     public RecordDTO createRecord(RecordDTO recordDTO) {
 
-        UserDTO userDTO = userService.findByEmail(recordDTO.getUserId());
+        User user = userService.findByEmail(recordDTO.getUserId());
 
         Operation operation = operationService
                 .findByType(recordDTO.getOperation().toLowerCase());
 
         Double cost = operation.getCost();
-        if (isBalanceSufficient(recordDTO.getUserId(), cost)) {
-            throw new InsufficientBalanceException("User balance is not sufficient to create this record.");
-        }
 
-        // Apply the strategy based on the operation type
+        // strategy based on the operation type
         OperationStrategy strategy = OperationStrategyFactory.getStrategy(Type.valueOf(recordDTO.getOperation().toUpperCase()));
         Double result = strategy.execute(recordDTO, recordDTO.getFirstValue(), recordDTO.getSecValue());
 
+        if (isBalanceSufficient(user.getBalance(), cost)) {
+            throw new InsufficientBalanceException("User balance is not sufficient to create this record.");
+        }
+
         // Update user balance and save user
-        User user = userService.save(ObjectMapperUtils.map(userDTO, User.class));
+        double newUserBalance = user.getBalance() - cost;
+        user.setBalance(newUserBalance);
+
+        User userUpdated = userService.save(user);
 
         Record record = new Record();
         record.setOperationResponse(result);
@@ -61,21 +66,17 @@ public class RecordService {
         record.setOperation(operation);
         record.setFirstValue(recordDTO.getFirstValue());
         record.setSecondValue(recordDTO.getSecValue());
-        record.setUserBalance(recordDTO.getUserBalance() - operation.getCost());
-        record.setUser(user);
+        record.setUserBalance(newUserBalance); //TODO: UI should Get this field from user class
+        record.setUser(userUpdated);
 
         Record recordSaved = recordRepository
                 .save(record);
-        if (recordSaved.getUser() != null) {
-           recordSaved.getUser().setPassword(null);
-        }
 
         return ObjectMapperUtils.map(recordSaved, RecordDTO.class);
     }
 
-   private boolean isBalanceSufficient(String username, double operationCost) {
-        User user = getUser(username);
-        return !(user.getBalance() >= operationCost);
+    private boolean isBalanceSufficient(double currencyBalance, double operationCost) {
+        return !(currencyBalance >= operationCost);
     }
 
     private User getUser(String username) {
@@ -116,7 +117,7 @@ public class RecordService {
     }
 
     private RecordDTO convertToDto(Record record) {
-      return ObjectMapperUtils.map(record, RecordDTO.class);
+        return ObjectMapperUtils.map(record, RecordDTO.class);
     }
 
 }
