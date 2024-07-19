@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.ntd.service.utils.RandomStringGenerator.createRandomString;
+
 @Service
 public class RecordService {
 
@@ -37,20 +39,24 @@ public class RecordService {
 
     @Transactional
     public RecordDTO createRecord(RecordDTO recordDTO) {
+        String resultString = null;
+        Double result = null;
 
         User user = userService.findByEmail(recordDTO.getUserId());
 
         Operation operation = operationService
-                .findByType(recordDTO.getOperation().toLowerCase());
+                .findByType(recordDTO.getOperation().getType().getType());
 
         Double cost = operation.getCost();
 
-        // strategy based on the operation type
-        OperationStrategy strategy = OperationStrategyFactory.getStrategy(Type.valueOf(recordDTO.getOperation().toUpperCase()));
-        Double result = strategy.execute(recordDTO, recordDTO.getFirstValue(), recordDTO.getSecValue());
-
         if (isBalanceSufficient(user.getBalance(), cost)) {
             throw new InsufficientBalanceException("User balance is not sufficient to create this record.");
+        }
+
+        if (operation.getType() == Type.RANDOM_STRING) {
+            resultString = createRandomString(10);
+        } else {
+            result = getResult(recordDTO);
         }
 
         // Update user balance and save user
@@ -59,28 +65,43 @@ public class RecordService {
 
         User userUpdated = userService.save(user);
 
+        Record record = getRecord(recordDTO, cost, newUserBalance, operation, userUpdated, resultString, result);
+
+        return ObjectMapperUtils.map(this.save(record), RecordDTO.class);
+    }
+
+    private static Double getResult(RecordDTO recordDTO) {
+        // strategy based on the operation type
+        OperationStrategy strategy = OperationStrategyFactory
+                .getStrategy(Type.valueOf(recordDTO.getOperation().getType().getType().toUpperCase()));
+
+        return strategy.execute(recordDTO, recordDTO.getFirstValue(), recordDTO.getSecValue());
+    }
+
+    private static Record getRecord(RecordDTO recordDTO, Double cost, double newUserBalance, Operation operation, User userUpdated, String resultString, Double result) {
         Record record = new Record();
-        record.setOperationResponse(result);
         record.setAmount(cost);
-        record.setDate(LocalDateTime.now());
-        record.setOperation(operation);
-        record.setFirstValue(recordDTO.getFirstValue());
-        record.setSecondValue(recordDTO.getSecValue());
         record.setUserBalance(newUserBalance); //TODO: UI should Get this field from user class
+        record.setOperation(operation);
         record.setUser(userUpdated);
+        record.setDate(LocalDateTime.now());
 
-        Record recordSaved = recordRepository
-                .save(record);
+        completeRecord(recordDTO, resultString, record, result);
+        return record;
+    }
 
-        return ObjectMapperUtils.map(recordSaved, RecordDTO.class);
+    private static void completeRecord(RecordDTO recordDTO, String resultString, Record record, Double result) {
+        if (resultString != null) {
+            record.setOperationResponse(resultString);
+        } else {
+            record.setOperationResponse(result.toString());
+            record.setFirstValue(recordDTO.getFirstValue());
+            record.setSecondValue(recordDTO.getSecValue());
+        }
     }
 
     private boolean isBalanceSufficient(double currencyBalance, double operationCost) {
         return !(currencyBalance >= operationCost);
-    }
-
-    private User getUser(String username) {
-        return ObjectMapperUtils.map(userService.findByEmail(username), User.class);
     }
 
     @Transactional
@@ -107,8 +128,8 @@ public class RecordService {
         return ObjectMapperUtils.map(record, RecordDTO.class);
     }
 
-    public void save(Record record) {
-        recordRepository.save(record);
+    public Record save(Record record) {
+        return recordRepository.save(record);
     }
 
     public Page<RecordDTO> findByUserId(String userId, Pageable pageable) {

@@ -16,8 +16,6 @@ public class OperationStrategyFactory {
                 return new DivisionStrategy();
             case SQUARE_ROOT:
                 return new SquareRootStrategy();
-            case RANDOM_STRING:
-                return new RandomStringStrategy();
             default:
                 throw new IllegalArgumentException("Invalid operation type: " + type);
         }

@@ -32,7 +32,7 @@ public class Record {
     private Double secondValue;
     private Double amount;
     private Double userBalance;
-    private Double operationResponse;
+    private String operationResponse;
     private LocalDateTime date;
 
 }

@@ -6,9 +6,10 @@ import com.ntd.entity.Record;
 import com.ntd.entity.Type;
 import com.ntd.entity.User;
 import com.ntd.repository.RecordRepository;
+import com.ntd.service.dao.OperationDTO;
 import com.ntd.service.dao.RecordDTO;
-import com.ntd.service.dao.UserDTO;
 import com.ntd.service.exception.InsufficientBalanceException;
+import com.ntd.service.exception.InvalidSquareRootNumberException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,7 @@ public class RecordServiceTest {
 
     private RecordDTO recordDTO;
     private User user;
-    private Operation operation;
+    private OperationDTO operationDTO;
 
     @BeforeEach
     public void setUp() {
@@ -62,12 +63,11 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_success_addition() {
-        recordDTO.setOperation("addition");
-        operation = new Operation(1L, Type.ADDITION, 50.0);
+        recordDTO.setOperation(new OperationDTO(1L, Type.ADDITION, 30.0));
+        operationDTO = new OperationDTO(1L, Type.ADDITION, 30.0);
 
-        when(userService.findByEmail("testUser"))
-                .thenReturn(user);
-        when(operationService.findByType("addition")).thenReturn(operation);
+        when(userService.findByEmail("testUser")).thenReturn(user);
+        when(operationService.findByType("addition")).thenReturn(ObjectMapperUtils.map(operationDTO, Operation.class));
         when(recordRepository.save(any(Record.class))).thenReturn(new Record());
 
         RecordDTO result = recordService.createRecord(recordDTO);
@@ -79,8 +79,8 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_success_subtraction() {
-        recordDTO.setOperation("subtraction");
-        operation = new Operation(1L, Type.SUBTRACTION, 50.0);
+        recordDTO.setOperation(new OperationDTO(1L, Type.SUBTRACTION, 50.0));
+        Operation operation = new Operation(1L, Type.SUBTRACTION, 50.0);
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("subtraction")).thenReturn(operation);
@@ -95,8 +95,8 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_success_multiplication() {
-        recordDTO.setOperation("multiplication");
-        operation = new Operation(1L, Type.MULTIPLICATION, 50.0);
+        Operation operation = new Operation(1L, Type.MULTIPLICATION, 50.0);
+        recordDTO.setOperation(ObjectMapperUtils.map(operation, OperationDTO.class));
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("multiplication")).thenReturn(operation);
@@ -111,8 +111,8 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_success_division() {
-        recordDTO.setOperation("division");
-        operation = new Operation(1L, Type.DIVISION, 50.0);
+        recordDTO.setOperation(new OperationDTO(1L, Type.DIVISION, 50.0));
+        Operation operation = new Operation(1L, Type.DIVISION, 50.0);
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("division")).thenReturn(operation);
@@ -127,8 +127,9 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_success_squareRoot() {
-        recordDTO.setOperation("square_root");
-        operation = new Operation(1L, Type.SQUARE_ROOT, 50.0);
+        recordDTO.setOperation(new OperationDTO(1L, Type.SQUARE_ROOT, 50.0));
+        recordDTO.setFirstValue(16.0);
+        Operation operation = new Operation(1L, Type.SQUARE_ROOT, 50.0);
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("square_root")).thenReturn(operation);
@@ -142,13 +143,26 @@ public class RecordServiceTest {
     }
 
     @Test
+    public void testCreateRecord_squareRoot_negativeValue() {
+        recordDTO.setOperation(new OperationDTO(1L, Type.SQUARE_ROOT, 50.0));
+        recordDTO.setFirstValue(-16.0);
+        Operation operation = new Operation(1L, Type.SQUARE_ROOT, 50.0);
+
+        when(userService.findByEmail("testUser")).thenReturn(user);
+        when(operationService.findByType("square_root")).thenReturn(operation);
+
+        assertThrows(InvalidSquareRootNumberException.class, () -> recordService.createRecord(recordDTO));
+    }
+
+    @Test
     public void testCreateRecord_success_randomString() {
-        recordDTO.setOperation("random_string");
-        operation = new Operation(1L, Type.RANDOM_STRING, 50.0);
+        recordDTO.setOperation(new OperationDTO(1L, Type.RANDOM_STRING, 50.0));
+        Operation operation = new Operation(1L, Type.RANDOM_STRING, 50.0);
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("random_string")).thenReturn(operation);
-        when(recordRepository.save(any(Record.class))).thenReturn(new Record());
+        when(recordRepository.save(any(Record.class)))
+                .thenReturn(new Record());
 
         RecordDTO result = recordService.createRecord(recordDTO);
 
@@ -159,10 +173,10 @@ public class RecordServiceTest {
 
     @Test
     public void testCreateRecord_insufficientBalance() {
-        recordDTO.setOperation("addition");
+        recordDTO.setOperation(new OperationDTO(1L, Type.ADDITION, 30.0));
         recordDTO.setUserBalance(30.0);
         user.setBalance(30.0);
-        operation = new Operation(1L, Type.ADDITION, 50.0);
+        Operation operation = new Operation(1L, Type.ADDITION, 50.0);
 
         when(userService.findByEmail("testUser")).thenReturn(user);
         when(operationService.findByType("addition")).thenReturn(operation);

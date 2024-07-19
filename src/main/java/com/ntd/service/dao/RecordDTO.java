@@ -12,13 +12,13 @@ import java.time.LocalDateTime;
 public class RecordDTO {
 
     private Long id;
-    private String operation;
+    private OperationDTO operation;
     private String userId;
     private Double amount;
     private Double firstValue;
     private Double secValue;
     private Double userBalance;
-    private Double operationResponse;
+    private String operationResponse;
     private LocalDateTime date;
 
 }

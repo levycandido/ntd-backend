@@ -2,6 +2,7 @@ package com.ntd.web.rest;
 
 import com.ntd.entity.Type;
 import com.ntd.service.RecordService;
+import com.ntd.service.dao.OperationDTO;
 import com.ntd.service.dao.RecordDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,10 +40,10 @@ class RecordControllerTest {
 
         RecordDTO recordDTO = new RecordDTO();
         recordDTO.setUserId("test@example.com");
-        recordDTO.setOperation(Type.ADDITION.getType());
+        recordDTO.setOperation(new OperationDTO(1L, Type.DIVISION, 10.0));
         recordDTO.setFirstValue(10.0);
         recordDTO.setUserBalance(90.0);
-        recordDTO.setOperationResponse(100.0);
+        recordDTO.setOperationResponse("100.0");
 
         Pageable pageable = PageRequest.of(0, 10, Sort.by("date"));
         recordPage = new PageImpl<>(Collections.singletonList(recordDTO), pageable, 1);
